@@ -1,0 +1,1 @@
+Bu multi tool kriptoloji ve sistem analizi için yazılmıştır requiqments.txt yi unuttum server.js i incelerseniz indireceginiz node paketleri gözüküyor npm install ile halledersiniz sorumluluk size aittir
