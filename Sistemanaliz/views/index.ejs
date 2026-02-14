@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistem-Analiz-Akmenhan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1000px;
+            margin: 30px auto;
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .tabs button {
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            background: #334155;
+            color: white;
+            margin: 5px;
+            border-radius: 8px;
+        }
+
+        .tabs button.active {
+            background: #3b82f6;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            border-radius: 6px;
+            border: none;
+        }
+
+        button.submit-btn {
+            margin-top: 15px;
+            padding: 10px;
+            width: 100%;
+            background: #22c55e;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        .score {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Sistem-Analiz-Akmenhan</h2>
+
+    <div class="tabs">
+        <button onclick="showTab('encoder')" class="active" id="btn-encoder">Encoder</button>
+        <button onclick="showTab('aes')" id="btn-aes">AES</button>
+        <button onclick="showTab('hash')" id="btn-hash">SHA256</button>
+        <button onclick="showTab('scan')" id="btn-scan">URL Scan</button>
+        <button onclick="showTab('analyze')" id="btn-analyze">Website Analyzer</button>
+    </div>
+
+    <!-- ENCODER -->
+    <div id="encoder" class="section active">
+        <form action="/convert" method="POST">
+            <input type="text" name="input" placeholder="Metin gir..." required>
+
+            <select name="type">
+                <option value="base64-encode">Base64 Encode</option>
+                <option value="base64-decode">Base64 Decode</option>
+                <option value="base32-encode">Base32 Encode</option>
+                <option value="base32-decode">Base32 Decode</option>
+                <option value="hex">Hex</option>
+                <option value="binary">Binary</option>
+                <option value="sha256">SHA256</option>
+                <option value="md5">MD5</option>
+            </select>
+
+            <button type="submit" class="submit-btn">Dönüştür</button>
+        </form>
+
+        <% if (result) { %>
+            <div class="result-box">
+                <strong>Sonuç:</strong>
+                <p><%= result %></p>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- AES -->
+    <!--Verilen anahtara göre şifre oluşturmak için anahtarı bilmeyen birisi şifreyi çözemez-->
+    <div id="aes" class="section">
+        <form action="/aes" method="POST">
+            <input type="text" name="input" placeholder="Metin gir..." required>
+            <input type="text" name="key" placeholder="Anahtar gir..." required>
+
+            <select name="mode">
+                <option value="encrypt">Encrypt</option>
+                <option value="decrypt">Decrypt</option>
+            </select>
+
+            <button type="submit" class="submit-btn">AES İşlem</button>
+        </form>
+
+        <% if (aesResult) { %>
+            <div class="result-box">
+                <strong>AES Sonuç:</strong>
+                <p><%= aesResult %></p>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- HASH -->
+    <div id="hash" class="section">
+        <form action="/hash" method="POST">
+            <input type="text" name="password" placeholder="Şifre gir..." required>
+            <button type="submit" class="submit-btn">SHA256 Oluştur</button>
+        </form>
+
+        <% if (hashResult) { %>
+            <div class="result-box">
+                <strong>Hash:</strong>
+                <p><%= hashResult %></p>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- TARAMA -->
+    <div id="scan" class="section">
+        <form action="/scan" method="POST">
+            <input type="text" name="url" placeholder="https://example.com" required>
+            <button type="submit" class="submit-btn">Tara</button>
+        </form>
+
+        <% if (scanResult) { %>
+
+            <% if (scanResult.error) { %>
+                <div class="result-box">
+                    <strong>Hata:</strong>
+                    <p><%= scanResult.error %></p>
+                </div>
+            <% } else if (scanResult.subdomains) { %>
+                <div class="result-box">
+                    <strong>Alt Alan Adları:</strong>
+                    <ul>
+                        <% scanResult.subdomains.forEach(function(sub){ %>
+                            <li><%= sub %></li>
+                        <% }) %>
+                    </ul>
+
+                    <strong>Endpointler:</strong>
+                    <ul>
+                        <% scanResult.endpoints.forEach(function(ep){ %>
+                            <li><%= ep %></li>
+                        <% }) %>
+                    </ul>
+                </div>
+            <% } %>
+
+        <% } %>
+    </div>
+
+    <!-- ANALİZ -->
+    <div id="analyze" class="section">
+        <form action="/analyze" method="POST">
+            <input type="text" name="url" placeholder="https://example.com" required>
+            <button type="submit" class="submit-btn">Analiz Et</button>
+        </form>
+
+        <% if (analysis) { %>
+
+            <% if (analysis.error) { %>
+                <div class="result-box">
+                    <p><%= analysis.error %></p>
+                </div>
+            <% } else { %>
+                <div class="result-box">
+                    <p><strong>Host:</strong> <%= analysis.hostname %></p>
+                    <p><strong>Protocol:</strong> <%= analysis.protocol %></p>
+                    <p><strong>Status:</strong> <%= analysis.status %></p>
+
+                    <p class="score">Security Score: <%= analysis.score %>/100</p>
+
+                    <strong>Eksik Headerlar:</strong>
+                    <ul>
+                        <% analysis.recommendations.forEach(function(rec){ %>
+                            <li><%= rec %></li>
+                        <% }) %>
+                    </ul>
+
+                    <strong>Robots.txt:</strong>
+                    <ul>
+                        <% analysis.robotsData.forEach(function(r){ %>
+                            <li><%= r %></li>
+                        <% }) %>
+                    </ul>
+
+                    <strong>Sitemap:</strong>
+                    <ul>
+                        <% analysis.sitemapUrls.forEach(function(s){ %>
+                            <li><%= s %></li>
+                        <% }) %>
+                    </ul>
+
+                    <p><strong>Registrar:</strong> <%= analysis.whois.registrar %></p>
+                    <p><strong>Creation Date:</strong> <%= analysis.whois.creationDate %></p>
+                </div>
+            <% } %>
+
+        <% } %>
+    </div>
+
+</div>
+
+<script>
+    function showTab(id) {
+        const sections = document.querySelectorAll(".section");
+        const buttons = document.querySelectorAll(".tabs button");
+
+        sections.forEach(s => s.classList.remove("active"));
+        buttons.forEach(b => b.classList.remove("active"));
+
+        document.getElementById(id).classList.add("active");
+        document.getElementById("btn-" + id).classList.add("active");
+    }
+</script>
+
+</body>
+</html>
